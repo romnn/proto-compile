@@ -50,11 +50,11 @@ base_proto_parent_dir_help = (
     ),
 )
 @click.option(
-    "--clear-output-dir",
+    "--clear-output-dirs",
     "-clear",
     is_flag=True,
     default=False,
-    help=str("whether to clear the output directory before compilation"),
+    help=str("whether to clear the output directories before compilation"),
 )
 @click.option(
     "--verbosity",
@@ -85,42 +85,6 @@ def proto_compile(
         verbosity=verbosity,
         protoc_version=protoc_version,
     )
-
-
-@proto_compile.command()
-@click.option(
-    "--py-output-dir",
-    default="",
-    type=click.Path(),
-    help="separate python generated output dir",
-)
-@click.option(
-    "--js-output-dir",
-    default="",
-    type=click.Path(),
-    help="separate javascript generated output dir",
-)
-@click.pass_context
-def compile(ctx: str, py_output_dir: str, js_output_dir: str,) -> int:
-    """ compile with manual protoc flags """
-    try:
-        pass
-        # compiler.compile(
-        #     proto_source_dir=proto_source_dir,
-        #     output_dir=output_dir,
-        #     base_proto_parent_dir=None
-        #     if base_proto_parent_dir == ""
-        #     else base_proto_parent_dir,
-        #     js_out_options=js_out_options,
-        #     grpc_web_out_options=grpc_web_out_options,
-        #     clear_output_dir=clear_output_dir,
-        #     verbosity=verbosity,
-        #     protoc_version=protoc_version,
-        #     grpc_web_plugin_version=grpc_web_plugin_version,
-        # )
-    except Exception as e:  # pragma: no cover
-        raise click.ClickException(str(e))
-    return 0
 
 
 @proto_compile.command()
@@ -187,7 +151,7 @@ def python_grpc(
     py_grpc_out_options: typing.Optional[str],
     py_grpc_output_dir: typing.Optional[PathLike],
 ) -> int:
-    """ compile using the grpc-web preset """
+    """ compile using the python grpc preset """
     try:
         compiler.compile_python_grpc(
             options=ctx.obj["COMPILER_OPTIONS"],
