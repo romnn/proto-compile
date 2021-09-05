@@ -48,8 +48,8 @@ jobs:
                   dart pub global activate protoc_plugin # dart
                   pip install mypy-protobuf mypy>=0.910 types-protobuf>=0.1.14 # mypy
                   npm install -g ts-protoc-gen # typescript
-                  # go install google.golang.org/protobuf/cmd/protoc-gen-go
-                  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc # golang grpc
+                  # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+                  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest # golang grpc
                   pecl install grpc # php grpc
                   npm install -g grpc-tools # javascript grpc
             - name: Test
