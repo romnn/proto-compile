@@ -1,0 +1,32 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+# Formatting
+flake8 = "*"
+black = "==19.10b0"
+isort = "*"
+# Testing
+tox = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-xdist = "*"
+pytest-sugar = "*"
+pyfakefs = "*"
+mypy = "*"
+# Coverage
+coverage = "*"
+# Tools
+pre-commit = "*"
+twine = "*"
+invoke = "*"
+m2r = "*"
+bump2version = "*"
+pytest-subtests = "*"
+types-setuptools = "*"
+
+[packages]
+proto_compile = {path = ".", editable = true}
+grpcio-tools = "*"
