@@ -9,19 +9,11 @@ import subprocess
 import tempfile
 import typing
 
-from proto_compile.options import BaseCompilerOptions, CompilerOptions
+from proto_compile import versions as versions
+from proto_compile.options import BaseCompilerOptions, CompilerOptions, CompileTarget
 from proto_compile.plugins import PLUGINS, PROTOC_RELEASE_BASE_URL, ProtoCompiler
 from proto_compile.utils import PathLike, download_executable, print_command, rglob
-
-
-def compile_grpc_web(
-    options: BaseCompilerOptions,
-    js_out_options: str,
-    grpc_web_out_options: str,
-    grpc_web_plugin_version: str,
-) -> None:
-    # return compile(CompilerOptions())
-    return None
+from proto_compile.versions import Target
 
 
 class DefaultProtoCompiler(ProtoCompiler):
@@ -40,7 +32,7 @@ class DefaultProtoCompiler(ProtoCompiler):
         )
 
 
-def compile(options: CompilerOptions,) -> None:
+def compile(options: CompilerOptions) -> None:
     abs_source = os.path.abspath(options.proto_source_dir)
 
     proto_files = rglob(abs_source, match="*.proto", absolute=True)
@@ -148,3 +140,59 @@ def compile(options: CompilerOptions,) -> None:
     finally:
         # Remove temporary directory
         shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+def compile_grpc_web(
+    options: BaseCompilerOptions,
+    js_out_options: typing.Optional[str] = "import_style=commonjs,binary",
+    js_output_dir: typing.Optional[PathLike] = None,
+    grpc_web_out_options: typing.Optional[
+        str
+    ] = "import_style=typescript,mode=grpcwebtext",
+    grpc_web_plugin_version: typing.Optional[str] = versions.DEFAULT_PLUGIN_VERSIONS[
+        Target.GRPC_WEB
+    ],
+    grpc_web_output_dir: typing.Optional[PathLike] = None,
+) -> None:
+    return compile(
+        CompilerOptions(
+            base_options=options,
+            targets=[
+                CompileTarget(
+                    Target.JAVASCRIPT,
+                    output_dir=js_output_dir,
+                    out_options=js_out_options,
+                ),
+                CompileTarget(
+                    Target.GRPC_WEB,
+                    out_options=grpc_web_out_options,
+                    output_dir=grpc_web_output_dir,
+                    plugin_version=grpc_web_plugin_version,
+                ),
+            ],
+        )
+    )
+
+
+def compile_python_grpc(
+    options: BaseCompilerOptions,
+    py_out_options: typing.Optional[str] = None,
+    py_output_dir: typing.Optional[PathLike] = None,
+    py_grpc_out_options: typing.Optional[str] = None,
+    py_grpc_output_dir: typing.Optional[PathLike] = None,
+) -> None:
+    return compile(
+        CompilerOptions(
+            base_options=options,
+            targets=[
+                CompileTarget(
+                    Target.PYTHON, output_dir=py_output_dir, out_options=py_out_options,
+                ),
+                CompileTarget(
+                    Target.PYTHON_GRPC,
+                    out_options=py_grpc_out_options,
+                    output_dir=py_grpc_output_dir,
+                ),
+            ],
+        )
+    )

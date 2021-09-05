@@ -3,12 +3,14 @@
 """Console script for proto_compile."""
 import os
 import sys
+import typing
 
 import click
 
 import proto_compile.proto_compile as compiler
 import proto_compile.versions as versions
 from proto_compile.options import BaseCompilerOptions
+from proto_compile.utils import PathLike
 from proto_compile.versions import Target
 
 
@@ -160,32 +162,40 @@ def grpc_web(
 
 @proto_compile.command()
 @click.option(
-    "--py_out_options",
-    default="import_style=commonjs,binary",
-    help=str("options for the javascript proto compiler"),
+    "--py_out_options", default=None, help=str("options for the python proto compiler"),
+)
+@click.option(
+    "--py_output_dir",
+    default=None,
+    help=str("separate output dir for the python generated files"),
+)
+@click.option(
+    "--py_grpc_out_options",
+    default=None,
+    help=str("options for the python grpc proto compiler"),
+)
+@click.option(
+    "--py_grpc_output_dir",
+    default=None,
+    help=str("separate output dir for the python grpc generated files"),
 )
 @click.pass_context
-def py(
-    ctx: str,
-    # output_dir: str,
-    py_out_options: str,
+def python_grpc(
+    ctx: click.Context,
+    py_out_options: typing.Optional[str],
+    py_output_dir: typing.Optional[PathLike],
+    py_grpc_out_options: typing.Optional[str],
+    py_grpc_output_dir: typing.Optional[PathLike],
 ) -> int:
-    """ compile using the python preset """
+    """ compile using the grpc-web preset """
     try:
-        pass
-        # compiler.compile(
-        #     proto_source_dir=proto_source_dir,
-        #     output_dir=output_dir,
-        #     base_proto_parent_dir=None
-        #     if base_proto_parent_dir == ""
-        #     else base_proto_parent_dir,
-        #     js_out_options=js_out_options,
-        #     grpc_web_out_options=grpc_web_out_options,
-        #     clear_output_dir=clear_output_dir,
-        #     verbosity=verbosity,
-        #     protoc_version=protoc_version,
-        #     grpc_web_plugin_version=grpc_web_plugin_version,
-        # )
+        compiler.compile_python_grpc(
+            options=ctx.obj["COMPILER_OPTIONS"],
+            py_out_options=py_out_options,
+            py_output_dir=py_output_dir,
+            py_grpc_out_options=py_grpc_out_options,
+            py_grpc_output_dir=py_grpc_output_dir,
+        )
     except Exception as e:  # pragma: no cover
         raise click.ClickException(str(e))
     return 0
