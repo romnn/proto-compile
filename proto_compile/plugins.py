@@ -20,7 +20,9 @@ class ProtoCompiler:
 
 
 class ProtocPlugin:
-    def __init__(self,) -> None:
+    def __init__(
+        self,
+    ) -> None:
         self.executable = ""
         self.compiler: typing.Optional[ProtoCompiler] = None
 
@@ -60,7 +62,11 @@ class MyPyPlugin(ProtocPlugin):
         return """
         The {} plugin has to be installed. Run:
 
-            $ pip install mypy-protobuf mypy>=0.910 types-protobuf>=0.1.14
+            $ pip install mypy-protobuf 
+
+        This is only necessary to use the generated files:
+
+            $ mypy>=0.910 types-protobuf>=0.1.14 
 
         or consult the official documentation.
         """.format(
