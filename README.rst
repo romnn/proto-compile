@@ -2,20 +2,20 @@
 proto-compile
 ===============================
 
-.. image:: https://github.com/romnn/proto_compile/workflows/test/badge.svg
-        :target: https://github.com/romnn/proto_compile/actions
+.. image:: https://github.com/romnn/proto-compile/workflows/test/badge.svg
+        :target: https://github.com/romnn/proto-compile/actions
         :alt: Build Status
 
-.. image:: https://img.shields.io/pypi/v/proto_compile.svg
-        :target: https://pypi.python.org/pypi/proto_compile
+.. image:: https://img.shields.io/pypi/v/proto-compile.svg
+        :target: https://pypi.python.org/pypi/proto-compile
         :alt: PyPI version
 
-.. image:: https://img.shields.io/github/license/romnn/proto_compile
-        :target: https://github.com/romnn/proto_compile
+.. image:: https://img.shields.io/github/license/romnn/proto-compile
+        :target: https://github.com/romnn/proto-compile
         :alt: License
 
-.. image:: https://codecov.io/gh/romnn/proto_compile/branch/master/graph/badge.svg
-        :target: https://codecov.io/gh/romnn/proto_compile
+.. image:: https://codecov.io/gh/romnn/proto-compile/branch/master/graph/badge.svg
+        :target: https://codecov.io/gh/romnn/proto-compile
         :alt: Test Coverage
 
 """"""""
@@ -24,19 +24,15 @@ Your short description here.
 
 .. code-block:: console
 
-    $ pip install proto_compile
+    $ pip install proto-compile
+
+Usage
+-----
 
 .. code-block:: python
 
     import proto_compile
 
-Usage
------
-
-Dart:
-Make sure you have Dart installed
-.. code-block:: bash
-  pub global activate protoc_plugin 
 
 Development
 -----------
