@@ -8,7 +8,7 @@ import os
 
 short_description = "No description has been added so far."
 
-version = "version = "0.1.0""
+version = "version = "0.1.1""
 
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
