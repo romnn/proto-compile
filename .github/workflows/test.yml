@@ -13,6 +13,8 @@ jobs:
                   pipenv install --dev
             - name: Code checks
               uses: pre-commit/action@v2.0.0
+              env:
+                  SKIP: test
               with:
                   extra_args: --all-files
 
@@ -48,7 +50,7 @@ jobs:
                   dart pub global activate protoc_plugin # dart
                   pip install mypy-protobuf # mypy
                   npm install -g ts-protoc-gen # typescript
-                  # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+                  go install google.golang.org/protobuf/cmd/protoc-gen-go@latest # golang
                   go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest # golang grpc
                   # sudo pecl install grpc # php grpc
                   npm install -g grpc-tools # javascript grpc

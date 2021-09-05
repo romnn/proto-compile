@@ -20,9 +20,7 @@ class ProtoCompiler:
 
 
 class ProtocPlugin:
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self,) -> None:
         self.executable = ""
         self.compiler: typing.Optional[ProtoCompiler] = None
 
@@ -35,6 +33,9 @@ class ProtocPlugin:
         version: typing.Optional[str] = None,
         verbosity: int = 0,
     ) -> str:
+        pass
+
+    def install_hint(self) -> str:
         pass
 
 
@@ -62,11 +63,11 @@ class MyPyPlugin(ProtocPlugin):
         return """
         The {} plugin has to be installed. Run:
 
-            $ pip install mypy-protobuf 
+            $ pip install mypy-protobuf
 
         This is only necessary to use the generated files:
 
-            $ mypy>=0.910 types-protobuf>=0.1.14 
+            $ mypy>=0.910 types-protobuf>=0.1.14
 
         or consult the official documentation.
         """.format(
@@ -106,6 +107,24 @@ class TypescriptPlugin(ProtocPlugin):
         The {} plugin has to be installed. Run:
 
             $ npm install -g ts-protoc-gen
+
+        or consult the official documentation.
+        """.format(
+            self.executable
+        )
+
+
+class GolangPlugin(ProtocPlugin):
+    def __init__(self) -> None:
+        super().__init__()
+        self.executable = "protoc-gen-go"
+
+    def install_hint(self) -> str:
+        return """
+        The {} plugin has to be installed. Run:
+
+            $ go install google.golang.org/protobuf/cmd/protoc-gen-go
+            $ export PATH="$PATH:$(go env GOPATH)/bin"
 
         or consult the official documentation.
         """.format(
@@ -211,6 +230,7 @@ PLUGINS = {
     Target.DART: DartPlugin(),
     Target.MYPY: MyPyPlugin(),
     Target.TYPESCRIPT: TypescriptPlugin(),
+    Target.GO: GolangPlugin(),
     # GRPC
     Target.JAVASCRIPT_GRPC: JavascriptGrpcPlugin(),
     Target.PYTHON_GRPC: PythonGrpcPlugin(),
