@@ -35,9 +35,6 @@ class ProtocPlugin:
     ) -> str:
         pass
 
-    def install_hint(self) -> str:
-        pass
-
 
 class DartPlugin(ProtocPlugin):
     def __init__(self) -> None:
