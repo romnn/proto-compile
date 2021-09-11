@@ -4,7 +4,7 @@
 
 __author__ = """romnn"""
 __email__ = "contact@romnn.com"
-__version__ = "__version__ = "__version__ = "0.1.3"""
+__version__ = "__version__ = "__version__ = "0.1.4"""
 
 from proto_compile.options import BaseCompilerOptions, CompilerOptions, CompileTarget
 from proto_compile.proto_compile import compile, compile_grpc_web, compile_python_grpc
