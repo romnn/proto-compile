@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 import os
 
-short_description = "No description has been added so far."
+short_description = "(PRE-ALPHA, NOT TO BE USED IN PRODUCTION SCRIPTS) A prototype compiler within a Python Package"
 
 version = "0.1.6"
 
