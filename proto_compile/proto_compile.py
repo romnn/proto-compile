@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import tempfile
 import typing
+from pathlib import Path
 
 from proto_compile import versions as versions
 from proto_compile.options import BaseCompilerOptions, CompilerOptions, CompileTarget
@@ -43,7 +44,16 @@ def compile(options: CompilerOptions) -> None:
     if options.minimal_include_dir:
         abs_source = os.path.abspath(os.path.dirname(os.path.commonpath(proto_files)))
 
-    tmp_dir = tempfile.mkdtemp()
+    tmp_dir = Path(tempfile.mkdtemp())
+
+    def show_temp_dir() -> None:
+        print_command(
+            " ".join(["tree", str(tmp_dir.absolute())]),
+            stderr=subprocess.STDOUT,
+            shell=True,
+            verbosity=options.verbosity,
+        )
+
     try:
         system = platform.system().lower()  # darwin
         system_alias = "osx" if system == "darwin" else system  # osx for darwin
@@ -65,14 +75,17 @@ def compile(options: CompilerOptions) -> None:
         )
 
         protoc_executable = download_executable(
-            "protoc",
             url=protoc_release_url,
-            executable="protoc/bin/protoc",
+            executable="bin/protoc",
+            unarchive_as="protoc",
             dest_dir=tmp_dir,
             verbosity=options.verbosity,
         )
+
+        show_temp_dir()
+
         print_command(
-            "ls -la " + tmp_dir,
+            " ".join([str((tmp_dir / "protoc/bin/protoc").absolute()), "--version"]),
             stderr=subprocess.STDOUT,
             shell=True,
             verbosity=options.verbosity,
@@ -97,30 +110,37 @@ def compile(options: CompilerOptions) -> None:
 
             # get the required plugin
             if target.language in PLUGINS:
-                plugin = PLUGINS[target.language]
-                if plugin.compiler is not None:
-                    proto_compiler = plugin.compiler
+                plugin = PLUGINS[target.language](
+                    tmp_dir,
+                    version=target.plugin_version,
+                    verbosity=options.verbosity,
+                )
+                plugin_compiler = plugin.compiler()
+                proto_compiler = plugin_compiler or proto_compiler
 
                 try:
                     # attempt to install the plugin
-                    plugin_executable = plugin.installed()
-                    if plugin_executable is None:
-                        plugin_executable = plugin.install(
-                            tmp_dir,
-                            version=target.plugin_version,
-                            verbosity=options.verbosity,
+                    # plugin_executable = plugin.installed()
+                    # if plugin_executable is None:
+                    #     plugin_executable = plugin.install()
+                    plugin.install()
+                    # plugin_executable = plugin.install()
+                    # if plugin_executable is not None:
+                    proto_arguments.append(
+                        "--plugin=protoc-gen-{}={}".format(
+                            language,
+                            plugin.executable(),
                         )
-                    if plugin_executable is not None:
-                        proto_arguments.append(
-                            "--plugin=protoc-gen-{}={}".format(
-                                language, plugin_executable,
-                            )
-                        )
+                    )
+
+                    show_temp_dir()
 
                 except NotImplementedError:
                     # show installation hints
                     try:
-                        print(plugin.install_hint())
+                        hint = plugin.install_hint()
+                        if hint is not None:
+                            print(hint)
                     except NotImplementedError:
                         pass
 
@@ -146,14 +166,18 @@ def compile_grpc_web(
     options: BaseCompilerOptions,
     js_out_options: typing.Optional[str] = "import_style=commonjs,binary",
     js_output_dir: typing.Optional[PathLike] = None,
-    grpc_web_out_options: typing.Optional[
-        str
-    ] = "import_style=typescript,mode=grpcwebtext",
+    grpc_web_out_options: typing.Optional[str] = None,
     grpc_web_plugin_version: typing.Optional[str] = versions.DEFAULT_PLUGIN_VERSIONS[
         Target.GRPC_WEB
     ],
     grpc_web_output_dir: typing.Optional[PathLike] = None,
+    improbable: bool = False,
 ) -> None:
+    grpc_web_target = Target.IMPROBABLE_GRPC_WEB if improbable else Target.GRPC_WEB
+    grpc_web_out_options = grpc_web_out_options or (
+        "service=grpc-web" if improbable else "import_style=typescript,mode=grpcwebtext"
+    )
+
     return compile(
         CompilerOptions(
             base_options=options,
@@ -164,7 +188,7 @@ def compile_grpc_web(
                     out_options=js_out_options,
                 ),
                 CompileTarget(
-                    Target.GRPC_WEB,
+                    grpc_web_target,
                     out_options=grpc_web_out_options,
                     output_dir=grpc_web_output_dir,
                     plugin_version=grpc_web_plugin_version,
@@ -186,7 +210,9 @@ def compile_python_grpc(
             base_options=options,
             targets=[
                 CompileTarget(
-                    Target.PYTHON, output_dir=py_output_dir, out_options=py_out_options,
+                    Target.PYTHON,
+                    output_dir=py_output_dir,
+                    out_options=py_out_options,
                 ),
                 CompileTarget(
                     Target.PYTHON_GRPC,

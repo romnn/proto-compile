@@ -95,8 +95,12 @@ def proto_compile(
 )
 @click.option(
     "--grpc_web_out_options",
-    default="import_style=typescript,mode=grpcwebtext",
-    help=str("options for the grpc web proto compiler"),
+    default=None,
+    help=(
+        'options for the grpc web proto compiler'
+        ' (default "import_style=typescript,mode=grpcwebtext"'
+        ' or "service=grpc-web" for improbable)'
+    ),
 )
 @click.option(
     "--grpc_web_plugin_version",
@@ -104,12 +108,20 @@ def proto_compile(
     help="grpc web plugin version to use (default is %s)"
     % versions.DEFAULT_PLUGIN_VERSIONS[Target.GRPC_WEB],
 )
+@click.option(
+    "--improbable",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="use improbable gprc web compiler (default is False)",
+)
 @click.pass_context
 def grpc_web(
     ctx: click.Context,
     js_out_options: str,
     grpc_web_out_options: str,
     grpc_web_plugin_version: str,
+    improbable: bool,
 ) -> int:
     """ compile using the grpc-web preset """
     try:
@@ -118,15 +130,19 @@ def grpc_web(
             js_out_options=js_out_options,
             grpc_web_out_options=grpc_web_out_options,
             grpc_web_plugin_version=grpc_web_plugin_version,
+            improbable=improbable,
         )
     except Exception as e:  # pragma: no cover
-        raise click.ClickException(str(e))
+        raise e
+        # raise click.ClickException(str(e))
     return 0
 
 
 @proto_compile.command()
 @click.option(
-    "--py_out_options", default=None, help=str("options for the python proto compiler"),
+    "--py_out_options",
+    default=None,
+    help=str("options for the python proto compiler"),
 )
 @click.option(
     "--py_output_dir",
@@ -161,7 +177,8 @@ def python_grpc(
             py_grpc_output_dir=py_grpc_output_dir,
         )
     except Exception as e:  # pragma: no cover
-        raise click.ClickException(str(e))
+        raise e
+        # raise click.ClickException(str(e))
     return 0
 
 

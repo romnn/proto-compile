@@ -36,10 +36,18 @@ class CompileTarget:
         self.output_dir = output_dir
         self.plugin_version = plugin_version
 
+    def __str__(self) -> str:
+        return "%s@%s[%s]" % (self.language, self.plugin_version, self.out_options)
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 class CompilerOptions:
     def __init__(
-        self, base_options: BaseCompilerOptions, targets: typing.List[CompileTarget],
+        self,
+        base_options: BaseCompilerOptions,
+        targets: typing.List[CompileTarget],
     ) -> None:
         self.proto_source_dir = base_options.proto_source_dir
         self.minimal_include_dir = base_options.minimal_include_dir

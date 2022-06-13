@@ -36,8 +36,7 @@ def _delete_file(file):
 
 @task(help={"check": "Checks if source is formatted without applying changes"})
 def format(c, check=False):
-    """Format code
-    """
+    """Format code"""
     python_dirs_string = " ".join(PYTHON_DIRS)
     black_options = "--diff" if check else ""
     c.run("pipenv run black {} {}".format(black_options, python_dirs_string))
@@ -47,23 +46,19 @@ def format(c, check=False):
 
 @task
 def lint(c):
-    """Lint code
-    """
+    """Lint code"""
     c.run("pipenv run flake8 {}".format(SOURCE_DIR))
 
 
 @task
-def test(c, min_coverage=None):
-    """Run tests
-    """
-    pytest_options = "--cov-fail-under={}".format(min_coverage) if min_coverage else ""
-    c.run("pipenv run pytest --cov={} {}".format(SOURCE_DIR, pytest_options))
+def test(c):
+    """Run tests"""
+    c.run("pipenv run pytest {}".format(SOURCE_DIR))
 
 
 @task
 def type_check(c):
-    """Check types
-    """
+    """Check types"""
     c.run("pipenv run mypy")
 
 
@@ -79,16 +74,14 @@ def _create(d, *keys):
 
 @task
 def install_hooks(c):
-    """Install pre-commit hooks
-    """
+    """Install pre-commit hooks"""
     c.run("pipenv run pre-commit install -t pre-commit")
     c.run("pipenv run pre-commit install -t pre-push")
 
 
 @task
 def pre_commit(c):
-    """Run all pre-commit checks
-    """
+    """Run all pre-commit checks"""
     c.run("pipenv run pre-commit run --all-files")
 
 
@@ -100,8 +93,7 @@ def pre_commit(c):
     ),
 )
 def coverage(c, publish=False, provider="codecov"):
-    """Create coverage report
-    """
+    """Create coverage report"""
     if publish:
         # Publish the results via provider (e.g. codecov or coveralls)
         c.run("pipenv run {}".format(provider))
@@ -110,10 +102,10 @@ def coverage(c, publish=False, provider="codecov"):
         c.run("pipenv run coverage html -d {}".format(COVERAGE_DIR))
         webbrowser.open(COVERAGE_REPORT.as_uri())
 
+
 @task
 def clean_build(c):
-    """Clean up files from package building
-    """
+    """Clean up files from package building"""
     c.run("rm -fr build/")
     c.run("rm -fr dist/")
     c.run("rm -fr .eggs/")
@@ -123,8 +115,7 @@ def clean_build(c):
 
 @task
 def clean_python(c):
-    """Clean up python file artifacts
-    """
+    """Clean up python file artifacts"""
     c.run("find . -name '*.pyc' -exec rm -f {} +")
     c.run("find . -name '*.pyo' -exec rm -f {} +")
     c.run("find . -name '*~' -exec rm -f {} +")
@@ -133,8 +124,7 @@ def clean_python(c):
 
 @task
 def clean_tests(c):
-    """Clean up files from testing
-    """
+    """Clean up files from testing"""
     _delete_file(COVERAGE_FILE)
     shutil.rmtree(TOX_DIR, ignore_errors=True)
     shutil.rmtree(COVERAGE_DIR, ignore_errors=True)
@@ -142,21 +132,18 @@ def clean_tests(c):
 
 @task(pre=[clean_build, clean_python, clean_tests])
 def clean(c):
-    """Runs all clean sub-tasks
-    """
+    """Runs all clean sub-tasks"""
     pass
 
 
 @task(clean)
 def dist(c):
-    """Build source and wheel packages
-    """
+    """Build source and wheel packages"""
     c.run("python setup.py sdist")
     c.run("python setup.py bdist_wheel")
 
 
 @task(pre=[clean, dist])
 def release(c):
-    """Make a release of the python package to pypi
-    """
+    """Make a release of the python package to pypi"""
     c.run("twine upload dist/*")

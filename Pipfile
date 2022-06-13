@@ -6,7 +6,7 @@ name = "pypi"
 [dev-packages]
 # Formatting
 flake8 = "*"
-black = "==19.10b0"
+black = "*"
 isort = "*"
 # Testing
 tox = "*"

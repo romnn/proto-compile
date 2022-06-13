@@ -1,17 +1,20 @@
 import platform
 import subprocess
 import typing
+import abc
+import os
+from pathlib import Path
 
 import pkg_resources
 from grpc_tools.protoc import main as _compile_python_grpc
 
 from proto_compile.utils import PathLike, download_executable, executable_in_path
 from proto_compile.versions import DEFAULT_PLUGIN_VERSIONS, Target
+from proto_compile.utils import print_command
 
 PROTOC_RELEASE_BASE_URL = (
     "https://github.com/protocolbuffers/protobuf/releases/download"
 )
-GRPC_WEB_PLUGIN_RELEASE_BASE_URL = "https://github.com/grpc/grpc-web/releases/download"
 
 
 class ProtoCompiler:
@@ -19,32 +22,36 @@ class ProtoCompiler:
         raise NotImplementedError()
 
 
-class ProtocPlugin:
-    def __init__(self,) -> None:
-        self.executable = ""
-        self.compiler: typing.Optional[ProtoCompiler] = None
-
-    def installed(self) -> typing.Optional[PathLike]:
-        return executable_in_path(self.executable)
-
-    def install(
+class ProtocPlugin(abc.ABC):
+    def __init__(
         self,
         dest_dir: PathLike,
         version: typing.Optional[str] = None,
         verbosity: int = 0,
-    ) -> str:
+    ) -> None:
+        self.dest_dir: Path = Path(dest_dir)
+        self.version = version
+        self.verbosity = verbosity
+
+    def install(self) -> None:
         pass
 
-    def install_hint(self) -> str:
+    def install_hint(self) -> typing.Optional[str]:
         pass
+
+    def executable(self) -> typing.Optional[PathLike]:
+        return None
+
+    def compiler(self) -> typing.Optional[ProtoCompiler]:
+        return None
 
 
 class DartPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "protoc-gen-dart"
+    def executable(self) -> typing.Optional[PathLike]:
+        # todo
+        return "protoc-gen-dart"
 
-    def install_hint(self) -> str:
+    def install_hint(self) -> typing.Optional[str]:
         return """
         The dart plugin has to be installed. Run:
 
@@ -55,11 +62,11 @@ class DartPlugin(ProtocPlugin):
 
 
 class MyPyPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "protoc-gen-mypy"
+    def executable(self) -> typing.Optional[PathLike]:
+        # todo
+        return "protoc-gen-mypy"
 
-    def install_hint(self) -> str:
+    def install_hint(self) -> typing.Optional[str]:
         return """
         The {} plugin has to be installed. Run:
 
@@ -91,18 +98,18 @@ class PythonGrpcProtoCompiler(ProtoCompiler):
 
 
 class PythonGrpcPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "grpc_node_plugin"
-        self.compiler = PythonGrpcProtoCompiler()
+    def executable(self) -> typing.Optional[PathLike]:
+        return "grpc_node_plugin"
+
+    def compiler(self) -> typing.Optional[ProtoCompiler]:
+        return PythonGrpcProtoCompiler()
 
 
 class TypescriptPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "grpc_node_plugin"
+    def executable(self) -> typing.Optional[PathLike]:
+        return "grpc_node_plugin"
 
-    def install_hint(self) -> str:
+    def install_hint(self) -> typing.Optional[str]:
         return """
         The {} plugin has to be installed. Run:
 
@@ -115,48 +122,71 @@ class TypescriptPlugin(ProtocPlugin):
 
 
 class GolangPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "protoc-gen-go"
+    def executable(self) -> typing.Optional[PathLike]:
+        return self.dest_dir / "bin" / "protoc-gen-go"
 
-    def install_hint(self) -> str:
-        return """
-        The {} plugin has to be installed. Run:
+    def install_hint(self) -> typing.Optional[str]:
+        return "install golang"
 
-            $ go install google.golang.org/protobuf/cmd/protoc-gen-go
-            $ export PATH="$PATH:$(go env GOPATH)/bin"
-
-        or consult the official documentation.
-        """.format(
-            self.executable
+    def install(self) -> None:
+        plugin_version = self.version or DEFAULT_PLUGIN_VERSIONS[Target.GO]
+        install_command = str(" ").join(
+            [
+                "go",
+                "install",
+                "google.golang.org/protobuf/cmd/protoc-gen-go@%s" % plugin_version,
+            ]
+        )
+        if self.verbosity > 0:
+            print(install_command)
+        print_command(
+            install_command,
+            stderr=subprocess.STDOUT,
+            shell=True,
+            env={**os.environ, **{"GOPATH": str(self.dest_dir.absolute())}},
+            cwd=self.dest_dir,
+            verbosity=self.verbosity,
         )
 
 
 class GolangGrpcPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "protoc-gen-go-grpc"
+    def executable(self) -> typing.Optional[PathLike]:
+        return self.dest_dir / "bin" / "protoc-gen-go-grpc"
 
-    def install_hint(self) -> str:
-        return """
-        The {} plugin has to be installed. Run:
+    def install_hint(self) -> typing.Optional[str]:
+        return "install golang"
 
-            $ go install google.golang.org/protobuf/cmd/protoc-gen-go
-            $ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-            $ export PATH="$PATH:$(go env GOPATH)/bin"
-
-        or consult the official documentation.
-        """.format(
-            self.executable
-        )
+    def install(self) -> None:
+        plugin_version = self.version or DEFAULT_PLUGIN_VERSIONS[Target.GO_GRPC]
+        for pkg in [
+            "google.golang.org/protobuf/cmd/protoc-gen-go@%s"
+            % DEFAULT_PLUGIN_VERSIONS[Target.GO_GRPC],
+            "google.golang.org/grpc/cmd/protoc-gen-go-grpc@%s" % plugin_version,
+        ]:
+            install_command = str(" ").join(
+                [
+                    "go",
+                    "install",
+                    pkg,
+                ]
+            )
+            if self.verbosity > 0:
+                print(install_command)
+            print_command(
+                install_command,
+                stderr=subprocess.STDOUT,
+                shell=True,
+                env={**os.environ, **{"GOPATH": str(self.dest_dir.absolute())}},
+                cwd=self.dest_dir,
+                verbosity=self.verbosity,
+            )
 
 
 class PHPGrpcPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "grpc_php_plugin"
+    def executable(self) -> typing.Optional[PathLike]:
+        return "grpc_php_plugin"
 
-    def install_hint(self) -> str:
+    def install_hint(self) -> typing.Optional[str]:
         return """
         The {} plugin has to be installed. Run:
 
@@ -169,43 +199,51 @@ class PHPGrpcPlugin(ProtocPlugin):
 
 
 class JavascriptGrpcPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "grpc_tools_node_protoc_plugin"
+    def executable(self) -> typing.Optional[PathLike]:
+        return (
+            self.dest_dir / "node_modules" / "grpc-tools" / "bin" / "grpc_node_plugin"
+        )
 
-    def install_hint(self) -> str:
-        return """
-        The {} plugin has to be installed. Run:
+    def install_hint(self) -> typing.Optional[str]:
+        return "install npm"
 
-            $ npm install -g grpc-tools
-
-        or consult the official documentation.
-        """.format(
-            self.executable
+    def install(self) -> None:
+        install_command = str(" ").join(
+            [
+                "npm",
+                "install",
+                "grpc-tools",
+            ]
+        )
+        if self.verbosity > 0:
+            print(install_command)
+        print_command(
+            install_command,
+            stderr=subprocess.STDOUT,
+            shell=True,
+            cwd=self.dest_dir,
+            verbosity=self.verbosity,
         )
 
 
 class GrpcWebPlugin(ProtocPlugin):
-    def __init__(self) -> None:
-        super().__init__()
-        self.executable = "protoc-gen-grpc-web"
+    GRPC_WEB_PLUGIN_RELEASE_BASE_URL = (
+        "https://github.com/grpc/grpc-web/releases/download"
+    )
 
-    def install_hint(self) -> str:
-        raise NotImplementedError()
+    def executable(self) -> PathLike:
+        return self.dest_dir / "protoc-gen-grpc-web"
 
-    def install(
-        self,
-        dest_dir: PathLike,
-        version: typing.Optional[str] = None,
-        verbosity: int = 0,
-    ) -> str:
+    def install(self) -> None:
         system = platform.system().lower()  # darwin
         system_alias = "osx" if system == "darwin" else system  # osx for darwin
         system_alias = "win64" if system == "windows" else system_alias  # windows
         machine_arch = "x86_64" if system == "windows" else platform.machine()
 
-        grpc_web_plugin_version = version or DEFAULT_PLUGIN_VERSIONS[Target.GRPC_WEB]
-        grpc_web_plugin_release_url = GRPC_WEB_PLUGIN_RELEASE_BASE_URL
+        grpc_web_plugin_version = (
+            self.version or DEFAULT_PLUGIN_VERSIONS[Target.GRPC_WEB]
+        )
+        grpc_web_plugin_release_url = GrpcWebPlugin.GRPC_WEB_PLUGIN_RELEASE_BASE_URL
         grpc_web_plugin_release_url += "/" + grpc_web_plugin_version
         grpc_web_plugin_release_url += (
             "/protoc-gen-grpc-web-"
@@ -216,24 +254,52 @@ class GrpcWebPlugin(ProtocPlugin):
             + machine_arch
             + (".exe" if system == "windows" else "")
         )
-        plugin_executable = download_executable(
-            self.executable,
+        download_executable(
+            # self.executable(),
             url=grpc_web_plugin_release_url,
-            executable=self.executable,
-            dest_dir=dest_dir,
-            verbosity=verbosity,
+            executable=self.executable(),
+            dest_dir=self.dest_dir,
+            verbosity=self.verbosity,
         )
-        return plugin_executable
+
+
+class ImprobableGrpcWebPlugin(ProtocPlugin):
+    def executable(self) -> typing.Optional[PathLike]:
+        return (
+            self.dest_dir / "node_modules" / "ts-protoc-gen" / "bin" / "protoc-gen-ts"
+        )
+
+    def install_hint(self) -> typing.Optional[str]:
+        return "install npm"
+
+    def install(self) -> None:
+        install_command = str(" ").join(
+            [
+                "npm",
+                "install",
+                "ts-protoc-gen",
+            ]
+        )
+        if self.verbosity > 0:
+            print(install_command)
+        print_command(
+            install_command,
+            stderr=subprocess.STDOUT,
+            shell=True,
+            cwd=self.dest_dir,
+            verbosity=self.verbosity,
+        )
 
 
 PLUGINS = {
-    Target.DART: DartPlugin(),
-    Target.MYPY: MyPyPlugin(),
-    Target.TYPESCRIPT: TypescriptPlugin(),
-    Target.GO: GolangPlugin(),
+    Target.DART: DartPlugin,
+    Target.MYPY: MyPyPlugin,
+    Target.TYPESCRIPT: TypescriptPlugin,
+    Target.GO: GolangPlugin,
     # GRPC
-    Target.JAVASCRIPT_GRPC: JavascriptGrpcPlugin(),
-    Target.PYTHON_GRPC: PythonGrpcPlugin(),
-    Target.GO_GRPC: GolangGrpcPlugin(),
-    Target.GRPC_WEB: GrpcWebPlugin(),
+    Target.JAVASCRIPT_GRPC: JavascriptGrpcPlugin,
+    Target.PYTHON_GRPC: PythonGrpcPlugin,
+    Target.GO_GRPC: GolangGrpcPlugin,
+    Target.GRPC_WEB: GrpcWebPlugin,
+    Target.IMPROBABLE_GRPC_WEB: ImprobableGrpcWebPlugin,
 }
