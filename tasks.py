@@ -53,7 +53,7 @@ def lint(c):
 @task
 def test(c):
     """Run tests"""
-    c.run("pipenv run pytest {}".format(SOURCE_DIR))
+    c.run("pipenv run pytest {}".format(TEST_DIR))
 
 
 @task

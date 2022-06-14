@@ -103,7 +103,7 @@ def rglob(
 def executable_in_path(
     name: str, path: typing.Optional[typing.List[PathLike]] = None
 ) -> typing.Optional[PathLike]:
-    """ Check if PATH contains an executable """
+    """Check if PATH contains an executable"""
     path_items = path or os.environ["PATH"].split(os.pathsep)
     for prefix in path_items:
         filename = os.path.abspath(os.path.join(str(prefix), name))

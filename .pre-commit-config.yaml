@@ -1,6 +1,4 @@
 # See https://pre-commit.com/ for usage and config
-ci:
-    skip: [test]
 repos:
     - repo: local
       hooks:
@@ -32,6 +30,6 @@ repos:
             name: test
             stages: [commit]
             language: system
-            entry: pipenv run invoke test --min-coverage=50
+            entry: pipenv run invoke test
             pass_filenames: false
             types: [python]

@@ -14,20 +14,15 @@ PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 try:
     readme_rst = os.path.join(PROJECT_ROOT, "README.rst")
-    readme_md = os.path.join(PROJECT_ROOT, "README.md")
     if os.path.isfile(readme_rst):
         with open(readme_rst) as readme_file:
             long_description = readme_file.read()
-    elif os.path.isfile(readme_md):
-        import m2r
-
-        long_description = m2r.parse_from_file(readme_md)
     else:
         raise AssertionError("No readme file")
 except (ImportError, AssertionError):
     long_description = short_description
 
-requirements = ["Click>=6.0", "grpcio-tools"]
+requirements = ["Click>=6.0"]
 test_requirements = [
     "tox",
     "pytest",
@@ -35,17 +30,13 @@ test_requirements = [
     "pytest-xdist",
     "pytest-sugar",
     "mypy",
-    "pyfakefs",
-    "pytest-subtests",
     "types-setuptools",
 ]
 coverage_requirements = ["coverage"]
-formatting_requirements = ["flake8", "black==19.10b0", "isort"]
+formatting_requirements = ["flake8", "black", "isort"]
 tool_requirements = [
-    "m2r",
     "invoke",
     "pre-commit",
-    "cookiecutter",
     "bump2version",
 ]
 dev_requirements = (

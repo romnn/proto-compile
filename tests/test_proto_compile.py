@@ -254,7 +254,7 @@ if os.environ.get("CI", False):
 def test_compile(
     targets: typing.List[CompileTarget], outputs: typing.List[PathLike]
 ) -> None:
-    """ Test compiling protos for different languages """
+    """Test compiling protos for different languages"""
 
     with tempfile.TemporaryDirectory() as tmp:
         settings = CompilerOptions(

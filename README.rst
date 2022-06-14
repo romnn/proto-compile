@@ -46,7 +46,6 @@ You can run tests with
 .. code-block:: console
 
     $ invoke test
-    $ invoke test --min-coverage=90     # Fail when code coverage is below 90%
     $ invoke type-check                 # Run mypy type checks
 
 Linting and formatting

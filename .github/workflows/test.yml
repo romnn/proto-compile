@@ -10,7 +10,7 @@ jobs:
             - uses: actions/setup-python@v2
             - run: |
                   pip install pipenv
-                  pipenv install --dev
+                  pipenv install --clear --dev
             - name: Code checks
               uses: pre-commit/action@v2.0.0
               env:
@@ -49,11 +49,6 @@ jobs:
               run: |
                   dart pub global activate protoc_plugin # dart
                   pip install mypy-protobuf # mypy
-                  # npm install -g ts-protoc-gen # typescript
-                  # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest # golang
-                  # go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest # golang grpc
-                  # sudo pecl install grpc # php grpc
-                  # npm install -g grpc-tools # javascript grpc
             - name: Test
               run: tox
             - uses: codecov/codecov-action@v1

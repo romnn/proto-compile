@@ -1,16 +1,16 @@
+import abc
+import os
 import platform
 import subprocess
 import typing
-import abc
-import os
+import uuid
 from pathlib import Path
 
 import pkg_resources
 from grpc_tools.protoc import main as _compile_python_grpc
 
-from proto_compile.utils import PathLike, download_executable, executable_in_path
+from proto_compile.utils import PathLike, download_executable, print_command
 from proto_compile.versions import DEFAULT_PLUGIN_VERSIONS, Target
-from proto_compile.utils import print_command
 
 PROTOC_RELEASE_BASE_URL = (
     "https://github.com/protocolbuffers/protobuf/releases/download"
@@ -143,7 +143,15 @@ class GolangPlugin(ProtocPlugin):
             install_command,
             stderr=subprocess.STDOUT,
             shell=True,
-            env={**os.environ, **{"GOPATH": str(self.dest_dir.absolute())}},
+            env={
+                **os.environ,
+                **{
+                    "GOPATH": str(self.dest_dir.absolute()),
+                    "GOCACHE": str(
+                        (self.dest_dir / ("cache-%s" % uuid.uuid4())).absolute()
+                    ),
+                },
+            },
             cwd=self.dest_dir,
             verbosity=self.verbosity,
         )
@@ -176,7 +184,15 @@ class GolangGrpcPlugin(ProtocPlugin):
                 install_command,
                 stderr=subprocess.STDOUT,
                 shell=True,
-                env={**os.environ, **{"GOPATH": str(self.dest_dir.absolute())}},
+                env={
+                    **os.environ,
+                    **{
+                        "GOPATH": str(self.dest_dir.absolute()),
+                        "GOCACHE": str(
+                            (self.dest_dir / ("cache-%s" % uuid.uuid4())).absolute()
+                        ),
+                    },
+                },
                 cwd=self.dest_dir,
                 verbosity=self.verbosity,
             )

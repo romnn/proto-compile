@@ -97,7 +97,7 @@ def proto_compile(
     "--grpc_web_out_options",
     default=None,
     help=(
-        'options for the grpc web proto compiler'
+        "options for the grpc web proto compiler"
         ' (default "import_style=typescript,mode=grpcwebtext"'
         ' or "service=grpc-web" for improbable)'
     ),
@@ -123,7 +123,7 @@ def grpc_web(
     grpc_web_plugin_version: str,
     improbable: bool,
 ) -> int:
-    """ compile using the grpc-web preset """
+    """compile using the grpc-web preset"""
     try:
         compiler.compile_grpc_web(
             options=ctx.obj["COMPILER_OPTIONS"],
@@ -167,7 +167,7 @@ def python_grpc(
     py_grpc_out_options: typing.Optional[str],
     py_grpc_output_dir: typing.Optional[PathLike],
 ) -> int:
-    """ compile using the python grpc preset """
+    """compile using the python grpc preset"""
     try:
         compiler.compile_python_grpc(
             options=ctx.obj["COMPILER_OPTIONS"],
