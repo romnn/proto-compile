@@ -23,5 +23,7 @@ twine = "*"
 invoke = "*"
 bump2version = "*"
 types-setuptools = "*"
+typing-extensions = "*"
 
 [packages]
+grpcio-tools = "*"
