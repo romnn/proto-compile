@@ -28,5 +28,4 @@ pytest-subtests = "*"
 types-setuptools = "*"
 
 [packages]
-proto_compile = {path = ".", editable = true}
 grpcio-tools = "*"
