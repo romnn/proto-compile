@@ -1,7 +1,6 @@
 [run]
 source = proto_compile
 omit =
-    .tox
     tests
     tasks.py
     setup.py

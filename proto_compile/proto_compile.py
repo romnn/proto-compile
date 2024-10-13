@@ -198,6 +198,50 @@ def compile_grpc_web(
     )
 
 
+NodeGrpcOptions = typing.TypedDict(
+        'NodeGrpcOptions', {'js': str, 'grpc': int})
+
+def compile_node_grpc(
+    options: BaseCompilerOptions,
+    out_options: typing.Optional[NodeGrpcOptions] = None,
+    out_dirs: typing.Optional[NodeGrpcOptions] = None,
+    # grpc_web_out_options: typing.Optional[str] = None,
+    # grpc_web_plugin_version: typing.Optional[str] = versions.DEFAULT_PLUGIN_VERSIONS[
+    #     Target.GRPC_WEB
+    # ],
+    # grpc_web_output_dir: typing.Optional[PathLike] = None,
+    # improbable: bool = False,
+) -> None:
+    # grpc_web_target = Target.IMPROBABLE_GRPC_WEB if improbable else Target.GRPC_WEB
+    # grpc_web_out_options = grpc_web_out_options or (
+    #     "service=grpc-web" if improbable else "import_style=typescript,mode=grpcwebtext"
+    # )
+    #
+    # grpc_tools_node_protoc --js_out=import_style=commonjs,binary:../routeguide/static_codegen/ --grpc_out=grpc_js:../routeguide/static_codegen/ route_guide.proto
+    valid_out_options = out_options or dict(js="import_style=commonjs,binary", grpc="grpc_js")
+    # valid_out_dirs = out_dirs
+    return compile(
+        CompilerOptions(
+            base_options=options,
+            targets=[
+                CompileTarget(
+                    Target.NODE_GRPC,
+                    out_dirs=out_dirs,
+                    out_options=valid_out_options,
+                ),
+                # CompileTarget(
+                #     grpc_web_target,
+                #     out_options=grpc_web_out_options,
+                #     output_dir=grpc_web_output_dir,
+                #     plugin_version=grpc_web_plugin_version,
+                # ),
+            ],
+        )
+    )
+
+
+
+
 def compile_python_grpc(
     options: BaseCompilerOptions,
     py_out_options: typing.Optional[str] = None,

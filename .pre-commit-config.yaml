@@ -9,7 +9,6 @@ repos:
             entry: pipenv run invoke format
             pass_filenames: false
             types: [python]
-
           - id: lint
             name: lint
             stages: [commit]
@@ -17,7 +16,6 @@ repos:
             entry: pipenv run invoke lint
             pass_filenames: false
             types: [python]
-
           - id: type-check
             name: type-check
             stages: [commit]
@@ -25,7 +23,6 @@ repos:
             entry: pipenv run invoke type-check
             pass_filenames: false
             types: [python]
-
           - id: test
             name: test
             stages: [commit]

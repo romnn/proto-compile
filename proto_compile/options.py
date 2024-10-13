@@ -27,10 +27,12 @@ class CompileTarget:
     def __init__(
         self,
         language: Target,
-        out_options: typing.Optional[str] = None,
-        output_dir: typing.Optional[PathLike] = None,
-        plugin_version: typing.Optional[str] = None,
+        # out_options: typing.Optional[str] = None,
+        # output_dir: typing.Optional[PathLike] = None,
+        # plugin_version: typing.Optional[str] = None,
     ):
+        if language == Target.IMPROBABLE_GRPC_WEB:
+            print("WARN: improbable-eng/grpc-web is in maintenance mode only")
         self.language = language
         self.out_options = out_options
         self.output_dir = output_dir

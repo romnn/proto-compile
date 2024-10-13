@@ -221,7 +221,15 @@ class JavascriptGrpcPlugin(ProtocPlugin):
         )
 
     def install_hint(self) -> typing.Optional[str]:
-        return "install npm"
+        return """
+        The {} plugin has to be installed. Run:
+
+            $ npm install grpc-tools
+
+        or consult the official documentation.
+        """.format(
+            self.executable
+        )
 
     def install(self) -> None:
         install_command = str(" ").join(
@@ -240,6 +248,42 @@ class JavascriptGrpcPlugin(ProtocPlugin):
             cwd=self.dest_dir,
             verbosity=self.verbosity,
         )
+
+class NodeGrpcPlugin(ProtocPlugin):
+    def executable(self) -> typing.Optional[PathLike]:
+        return (
+            self.dest_dir / "node_modules" / "grpc-tools" / "bin" / "grpc_tools_node_protoc"
+        )
+
+    def install_hint(self) -> typing.Optional[str]:
+        return """
+        The {} plugin has to be installed. Run:
+
+            $ npm install grpc-tools
+
+        or consult the official documentation.
+        """.format(
+            self.executable
+        )
+
+    def install(self) -> None:
+        install_command = str(" ").join(
+            [
+                "npm",
+                "install",
+                "grpc-tools",
+            ]
+        )
+        if self.verbosity > 0:
+            print(install_command)
+        print_command(
+            install_command,
+            stderr=subprocess.STDOUT,
+            shell=True,
+            cwd=self.dest_dir,
+            verbosity=self.verbosity,
+        )
+
 
 
 class GrpcWebPlugin(ProtocPlugin):
@@ -313,6 +357,7 @@ PLUGINS = {
     Target.TYPESCRIPT: TypescriptPlugin,
     Target.GO: GolangPlugin,
     # GRPC
+    Target.NODE_GRPC: NodeGrpcPlugin,
     Target.JAVASCRIPT_GRPC: JavascriptGrpcPlugin,
     Target.PYTHON_GRPC: PythonGrpcPlugin,
     Target.GO_GRPC: GolangGrpcPlugin,

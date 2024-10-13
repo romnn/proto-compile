@@ -1,3 +1,4 @@
+from __future__ import annotations
 import fnmatch
 import os
 import subprocess
@@ -5,7 +6,7 @@ import typing
 import uuid
 from pathlib import Path
 
-PathLike = typing.Union[str, os.PathLike]
+PathLike = typing.Union[str, os.PathLike[typing.Any]]
 
 
 def print_command(

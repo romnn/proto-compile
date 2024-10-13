@@ -20,7 +20,7 @@ proto-compile
 
 """"""""
 
-Your short description here. 
+Your short description here.
 
 .. code-block:: console
 
@@ -33,11 +33,6 @@ Usage
 
     import proto_compile
 
-
-Development
------------
-
-For detailed instructions see the `contribution guide <CONTRIBUTING.rst>`_.
 
 Tests
 ~~~~~~~
